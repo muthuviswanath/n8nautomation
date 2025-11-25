@@ -1,0 +1,52 @@
+// Prepare Payload - robust version for n8n.cloud
+// Expects node names: "Calendar Fetch" and "Set Tasks"
+
+// 1) Get calendar events (safe extraction)
+const calItems = $("Calendar Fetch").all() || [];
+const calendar_events = calItems.map(it => {
+  const j = it.json || {};
+  const start = (j.start && (j.start.dateTime || j.start.date)) || j.start || null;
+  const end   = (j.end   && (j.end.dateTime   || j.end.date))   || j.end   || null;
+  return { start, end, summary: j.summary || j.description || "" };
+});
+
+// 2) Read tasks from Set Tasks node (handle multiple possible shapes)
+const setItem = $("Set Tasks").first();
+let tasks = [];
+
+// Case A: we stored { "tasks": [ ... ] } inside a JSON field named tasks_payload
+if (setItem && setItem.json && setItem.json.tasks_payload && Array.isArray(setItem.json.tasks_payload.tasks)) {
+  tasks = setItem.json.tasks_payload.tasks;
+}
+// Case B: older approach where Set node had "tasks" directly as a JSON field (array)
+else if (setItem && setItem.json && Array.isArray(setItem.json.tasks)) {
+  tasks = setItem.json.tasks;
+}
+// Case C: Set node itself returned an array as the top-level JSON (unlikely, but safe)
+else if (setItem && Array.isArray(setItem.json)) {
+  tasks = setItem.json;
+}
+// Fallback: empty
+else {
+  tasks = [];
+}
+
+// Normalize each task to ensure expected keys and types
+const normalizedTasks = tasks.map(t => ({
+  id: t.id || t.ID || (`task-${Math.random().toString(36).substr(2,5)}`),
+  title: t.title || t.name || "Untitled",
+  estimate_min: Number(t.estimate_min || t.estimate || 30),
+  deadline: t.deadline || null,
+  importance: Number(t.importance || 3),
+  goal_match: Number(t.goal_match || 0)
+}));
+
+const payload = {
+  date: new Date().toISOString().split("T")[0],
+  calendar_events,
+  tasks: normalizedTasks,
+  work_hours: { start: "09:00", end: "18:00" },
+  buffer_min: 10
+};
+
+return [{ json: payload }];
