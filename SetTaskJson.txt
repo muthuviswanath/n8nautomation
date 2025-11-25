@@ -1,0 +1,7 @@
+{
+  "tasks": [
+    {"id":"t1","title":"Write project report","estimate_min":90,"deadline":"2025-11-12","importance":4,"goal_match":0.9},
+    {"id":"t2","title":"Email clients","estimate_min":20,"deadline":"2025-11-11","importance":3,"goal_match":0.5},
+    {"id":"t3","title":"Prepare slides","estimate_min":60,"deadline":"2025-11-15","importance":3,"goal_match":0.8}
+  ]
+}
