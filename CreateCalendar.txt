@@ -1,0 +1,11 @@
+Start:
+{{$json["start"]}}
+
+Ebd:
+{{$json["end"]}}
+
+Description:
+Scheduled by personal-scheduler — score: {{$json["score"] || ""}}
+
+Summary:
+Task: {{$json["title"]}} (Proposed)
