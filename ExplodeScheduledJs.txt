@@ -1,0 +1,18 @@
+// Explode Scheduled - n8n Function node
+// Expects the previous node (Call Scheduler) output to have .json.scheduled array
+
+const scheduled = $json["scheduled"] || $json[0] && $json[0].scheduled || [];
+if (!Array.isArray(scheduled)) {
+  // try to handle cases where scheduled is inside nested response property
+  // search for scheduled in top-level keys
+  for (const k of Object.keys($json)) {
+    if (Array.isArray($json[k]) && $json[k].length && $json[k][0].start && $json[k][0].end) {
+      return $json[k].map(s => ({ json: s }));
+    }
+  }
+  // nothing found — return an informative item
+  return [{ json: { error: "No scheduled array found", payload: $json } }];
+}
+
+// Map each scheduled entry to a separate item
+return scheduled.map(s => ({ json: s }));
